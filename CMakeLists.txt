@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(LaTeX)
+project(iOSLaTeXMath)
 
 
 # check if compiler has c++11 support
@@ -20,32 +20,17 @@ endif()
 file(COPY res DESTINATION .)
 
 # source files
+include_directories("src")
 
-file(GLOB_RECURSE SRC "src/*.cpp")
+file(GLOB_RECURSE SOURCES "src/*.cpp")
+
+file(GLOB_RECURSE HEADERS "src/*.h")
 
 
-# check operating system
+add_library (${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
 
-if(WIN32)
-    message(STATUS "We are working on Windows")
-    include_directories("src")
-    set(LINK_LIBS gdiplus)
-elseif(UNIX AND NOT APPLE)
-    message(STATUS "We are working on Linux")
-    find_package(PkgConfig)
-    # include gtkmm module
-    pkg_check_modules(GTKMM gtkmm-3.0)
-    # include gtksourceview
-    pkg_check_modules(GSVMM gtksourceviewmm-3.0)
-    # inlcudes and libraries
-    link_directories(${GTKMM_LIBRARY_DIRS} ${GSVMM_LIBRARY_DIRS})
-    include_directories(${GTKMM_INCLUDE_DIRS} ${GSVMM_INCLUDE_DIRS} "src")
-    set(LINK_LIBS ${GTKMM_LIBRARIES} ${GSVMM_LIBRARIES} fontconfig)
-else()
-    message(STATUS "We are working on a unknown platform")
-    # other platforms...
-endif()
 
+set_xcode_property(${PROJECT_NAME} GCC_GENERATE_DEBUGGING_SYMBOLS YES "All")
 
 # compile options
 
@@ -64,5 +49,18 @@ if(MEM_CHECK)
     add_definitions(-DMEM_CHECK)
 endif()
 
-add_executable(LaTeX ${SRC})
-target_link_libraries(LaTeX ${LINK_LIBS})
+set_target_properties(${PROJECT_NAME} PROPERTIES
+FRAMEWORK TRUE
+FRAMEWORK_VERSION A
+MACOSX_FRAMEWORK_IDENTIFIER cn.tvm.tvm_model
+# MACOSX_FRAMEWORK_INFO_PLIST Info.plist
+# "current version" in semantic format in Mach-O binary file
+VERSION 1.0.0
+# "compatibility version" in semantic format in Mach-O binary file
+SOVERSION 1.0.0
+XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "iPhone Developer"
+RESOURCE "res"
+)
+# Installation
+# install (TARGETS iOSLaTeXMath DESTINATION lib)
+# install (FILES ${HEADERS} DESTINATION include)
